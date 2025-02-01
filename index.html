@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Frases</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .resultado {
+            margin-top: 20px;
+            font-size: 18px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            display: inline-block;
+            max-width: 600px;
+            text-align: left;
+            width: 100%;
+        }
+        .erro {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .idioma {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .idioma button {
+            margin: 0;
+            background-color: #28a745;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        .idioma button:hover {
+            background-color: #218838;
+        }
+        .bandeira {
+            width: 20px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        .idioma-ativo {
+            background-color: #0069d9;
+            color: white;
+        }
+        .idioma-ativo:hover {
+            background-color: #0056b3;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            input, button {
+                font-size: 14px;
+            }
+            .resultado {
+                font-size: 16px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Gerador de Frases</h1>
+    
+    <div class="idioma">
+        <button id="btn-pt" onclick="mudarIdioma('pt')">
+            <img src="https://flagcdn.com/br.svg" alt="Bandeira do Brasil" class="bandeira"> Português (PT-BR)
+        </button>
+        <button id="btn-en" onclick="mudarIdioma('en')">
+            <img src="https://flagcdn.com/us.svg" alt="Bandeira dos EUA" class="bandeira"> Inglês (EN-US)
+        </button>
+    </div>
+    
+    <input type="text" id="numero" placeholder="Digite um número de 11 dígitos" maxlength="11">
+    <button onclick="gerarFrase()">Gerar Frase</button>
+    
+    <div class="erro" id="erro"></div>
+    <div class="resultado" id="resultado"></div>
+
+    <script>
+        let idiomaAtual = 'pt';
+
+        function mudarIdioma(idioma) {
+            idiomaAtual = idioma;
+            const btnPt = document.getElementById('btn-pt');
+            const btnEn = document.getElementById('btn-en');
+            
+            if (idioma === 'pt') {
+                btnPt.classList.add('idioma-ativo');
+                btnEn.classList.remove('idioma-ativo');
+            } else {
+                btnEn.classList.add('idioma-ativo');
+                btnPt.classList.remove('idioma-ativo');
+            }
+        }
+
+        function gerarFrase() {
+            const numero = document.getElementById('numero').value;
+            const erroDiv = document.getElementById('erro');
+            const resultadoDiv = document.getElementById('resultado');
+            erroDiv.textContent = '';
+            resultadoDiv.textContent = '';
+
+            // Validação do número
+            if (!numero.match(/^\d{2}(\d{2}){4}$/)) {
+                erroDiv.textContent = "Número inválido. Insira um número no formato de 11 dígitos, como '31 45 12 87 23'.";
+                return;
+            }
+
+            // Requisição para o backend
+            fetch(`http://127.0.0.1:5000/gerar-frase?numero=${numero}&idioma=${idiomaAtual}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.frase) {
+                        resultadoDiv.textContent = data.frase;
+                    } else {
+                        erroDiv.textContent = data.erro || "Erro desconhecido.";
+                    }
+                })
+                .catch(error => {
+                    erroDiv.textContent = "Erro ao conectar ao servidor. Tente novamente.";
+                    console.error(error);
+                });
+        }
+    </script>
+</body>
+</html>
